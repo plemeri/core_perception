@@ -31,6 +31,7 @@ EKFLocalizer::EKFLocalizer() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw, yaw_bi
   pnh_.param("enable_yaw_bias_estimation", enable_yaw_bias_estimation_, bool(true));
   pnh_.param("extend_state_step", extend_state_step_, int(50));
   pnh_.param("pose_frame_id", pose_frame_id_, std::string("/map"));
+  pnh_.param("pose_topic", pose_topic_, std::string("ekf_pose"));
   pnh_.param("tf_frame_id", tf_frame_id_, std::string("ekf_pose"));
 
   /* pose measurement */
@@ -72,7 +73,7 @@ EKFLocalizer::EKFLocalizer() : nh_(""), pnh_("~"), dim_x_(6 /* x, y, yaw, yaw_bi
 
   timer_control_ = nh_.createTimer(ros::Duration(ekf_dt_), &EKFLocalizer::timerCallback, this);
   timer_tf_ = nh_.createTimer(ros::Duration(1.0 / tf_rate_), &EKFLocalizer::timerTFCallback, this);
-  pub_pose_ = nh_.advertise<geometry_msgs::PoseStamped>("ekf_pose", 1);
+  pub_pose_ = nh_.advertise<geometry_msgs::PoseStamped>(pose_topic_, 1);
   pub_pose_cov_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("ekf_pose_with_covariance", 1);
   pub_twist_ = nh_.advertise<geometry_msgs::TwistStamped>("ekf_twist", 1);
   pub_twist_cov_ = nh_.advertise<geometry_msgs::TwistWithCovarianceStamped>("ekf_twist_with_covariance", 1);

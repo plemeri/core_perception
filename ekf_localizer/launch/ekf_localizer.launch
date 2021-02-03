@@ -35,7 +35,9 @@
   <arg name="proc_stddev_vx_c" default="0.1"/>
   <arg name="proc_stddev_wz_c" default="0.05"/>
 
+  <arg name="pose_topic" default="ekf_pose"/>
   <arg name="tf_frame_id" default="ekf_pose"/>
+  
 
 
   <node pkg="ekf_localizer" type="ekf_localizer" name="ekf_localizer" output="screen">
