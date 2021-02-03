@@ -69,6 +69,7 @@ private:
   double tf_rate_;                   //!< @brief  tf publish rate
   bool enable_yaw_bias_estimation_;  //!< @brief  for LiDAR mount error. if true, publish /estimate_yaw_bias
   std::string pose_frame_id_;
+  std::string tf_frame_id_;
 
   int dim_x_;              //!< @brief  dimension of EKF state
   int extend_state_step_;  //!< @brief  for time delay compensation

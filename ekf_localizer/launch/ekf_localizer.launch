@@ -51,6 +51,7 @@
     <remap from="initialpose" to="/initialpose"/>
 
     <param name="pose_frame_id" value="map"/>
+    <param name="tf_frame_id" value="ekf_pose"/>
 
     <param name="show_debug_info" value="$(arg show_debug_info)"/>
     <param name="enable_yaw_bias_estimation" value="$(arg enable_yaw_bias_estimation)"/>
