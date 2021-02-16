@@ -1,0 +1,18 @@
+<launch>
+  <arg name="det_topic"         default="/im_detector/objects" />
+  <arg name="in_point_topic"    default="/points_depth" />
+  <arg name="no_ground_topic"   default="/points_no_ground" />
+  <arg name="camera_info_topic" default="/depth/camera_info" />
+  <arg name="out_point_topic"   default="/points_det" />
+  <arg name="in_costmap_topic"  default="/semantics/costmap_generator/occupancy_grid" />
+  <arg name="out_costmap_topic" default="/aligned_grid" />
+      <node name="points_det_fusion" pkg="depth_proc" type="points_det_fusion.py">
+        <param name="det_topic"         value="$(arg det_topic)" />
+        <param name="in_point_topic"    value="$(arg in_point_topic)" />
+        <param name="no_ground_topic"   value="$(arg no_ground_topic)" />
+        <param name="camera_info_topic" value="$(arg camera_info_topic)" />
+        <param name="out_point_topic"   value="$(arg out_point_topic)" />
+        <param name="in_costmap_topic"  value="$(arg in_costmap_topic)" />
+        <param name="out_costmap_topic" value="$(arg out_costmap_topic)" />
+    </node>
+</launch>

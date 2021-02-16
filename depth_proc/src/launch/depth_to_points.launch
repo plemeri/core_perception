@@ -1,0 +1,10 @@
+<launch>
+  <arg name="depth_image_topic" default="/depth/image_raw" />
+  <arg name="camera_info_topic" default="/depth/camera_info" />
+  <arg name="point_topic"       default="/points_depth" />
+    <node name="depth2points" pkg="depth_proc" type="depth_to_points.py">
+        <param name="depth_image_topic" value="$(arg depth_image_topic)" />
+        <param name="camera_info_topic" value="$(arg camera_info_topic)" />
+        <param name="point_topic"       value="$(arg point_topic)" />
+    </node>
+</launch>
