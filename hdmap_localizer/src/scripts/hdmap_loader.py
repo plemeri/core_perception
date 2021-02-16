@@ -3,9 +3,8 @@
 import numpy as np
 import os
 import pickle
-from numpy.lib.function_base import interp
-import shapefile as sp
-import tqdm
+# import shapefile as sp
+# import tqdm
 
 from easydict import EasyDict as ed
 
@@ -88,16 +87,7 @@ class hdmap_loader:
         self.hdmap_vis()
 
     def read_map(self):
-        shp_file = os.path.join(self.map_dir, self.type + '.shp')
-        dbf_file = os.path.join(self.map_dir, self.type + '.dbf')
-        shx_file = os.path.join(self.map_dir, self.type + '.shx')
         pkl_file = os.path.join(self.map_dir, self.type + '.pkl')
-
-        shp = open(shp_file, 'rb')
-        dbf = open(dbf_file, 'rb')
-        shx = open(shx_file, 'rb')
-        
-        shaperecords = sp.Reader(dbf=dbf, shx=shx, shp=shp).shapeRecords()
 
         self.shaperecords = []
 
@@ -105,22 +95,6 @@ class hdmap_loader:
             self.load_map_data(pkl_file)
             rospy.logdebug('pre loaded map found')
 
-        else:
-            for shaperecord in tqdm.tqdm(shaperecords, desc='loading map data - ' + self.type):
-                shape = shaperecord.shape
-                record = shaperecord.record
-
-                longitude = [i[0] for i in shape.points]
-                latitude  = [i[1] for i in shape.points]
-                altitude  = shape.z
-
-                points = [[i.easting  - self.center.easting, 
-                           i.northing - self.center.northing, 
-                           i.altitude - self.center.altitude] for i in map(fromLatLong, latitude, longitude, altitude)]
-                center = np.mean(points, axis=0).tolist()
-                
-                self.shaperecords.append({'shape': {'points': points, 'center': center}, 'record': record.as_dict()})
-            self.save_map_data(pkl_file)
         self.shaperecords = [ed(i) for i in self.shaperecords]
 
         rospy.logdebug('hdmap data loaded')

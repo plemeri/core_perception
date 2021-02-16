@@ -45,6 +45,8 @@ class hdmap_localizer:
         self.prev_link = None
         self.reliable = False
 
+        self.init = False
+
         self.pub_vis = rospy.Publisher('/current_link_vis', MarkerArray, queue_size=10)
         self.pub_hdmap = rospy.Publisher('/hdmap/lane_info', HDmap, queue_size=10)
     
@@ -123,6 +125,10 @@ class hdmap_localizer:
         return marker
 
     def pose_callback(self, msg):
+        if self.init is False:
+            self.link_map.hdmap_vis()
+            self.surf_map.hdmap_vis()
+            self.init = True
         markerarray = []
         lane_info = HDmap()
         lane_info.header.stamp = rospy.Time.now()
