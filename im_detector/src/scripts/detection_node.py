@@ -67,6 +67,10 @@ def image_callback(msg):
     global digit_reader
     global names
 
+    # eun0
+    tl_detected = False
+    ts_detected = False
+
     img = msg.data
     img = np.frombuffer(img, dtype=np.uint8)
     img = img.reshape((*IMAGE_SIZE, 3))
@@ -89,7 +93,8 @@ def image_callback(msg):
         viz = img.type(torch.float32).cpu()
         viz = to_pil_image(viz[0])
         viz = np.array(viz)
-        ts_img = np.zeros((150, 150, 3), dtype=np.uint8)
+        # eun0
+        ts_res = np.zeros((150, 150, 3), dtype=np.uint8)
         tl_img = np.zeros((50, 150, 3), dtype=np.uint8)
     
     if preds is not None:
@@ -107,8 +112,13 @@ def image_callback(msg):
 
             # Speed Limit
             if cls_id == 5 or cls_id == 6 or cls_id == 7:
-                if pred[0] < 640:
+                # eun0
+                if pred[0] < 640 or pred[2] - pred[0] < 10:
                     continue
+                ts_detected = True
+                #
+                # if pred[0] < 640:
+                    # continue
                 cpu_img = img[0].float().cpu()
                 pil_img = to_pil_image(cpu_img)
                 pil_img = pil_img.crop((pred[0], pred[1], pred[2], pred[3]))
@@ -126,11 +136,20 @@ def image_callback(msg):
                 if curr_size > max_size:
                     ts_data = result[0]
                     max_size = curr_size
+                     # eun0
+                    ts_res = np.array(pil_img)
+                    cv2.putText(ts_res,
+                                f"{ts_data} {pred[4]:.2f}", (0, 50),
+                                0, 1, (255, 255, 255), 1, cv2.LINE_AA)
+                
                 
             # Traffic Light
             if cls_id >= 10:
                 if pred[3] > 450:
                     continue
+                 # eun0
+                tl_detected = True
+
                 cpu_img = img[0].float().cpu()
                 pil_img = to_pil_image(cpu_img)
                 pil_img = pil_img.crop((pred[0], pred[1], pred[2], pred[3]))
@@ -182,6 +201,17 @@ def image_callback(msg):
             speed_limit = String()
             speed_limit.data = ts_data
             speed_limit_pub.publish(speed_limit)
+
+    # eun0
+    if not tl_detected:
+        traffic_light = String()
+        traffic_light.data = '0'
+        traffic_light_pub.publish(traffic_light)
+    if not ts_detected:
+        speed_limit = String()
+        speed_limit.data = '0'
+        speed_limit_pub.publish(speed_limit)
+    #
     
     if DEBUG:
         cv2.imshow("test", viz)
@@ -205,6 +235,6 @@ if __name__ == '__main__':
     info_sub = rospy.Subscriber(camera_info_topic, CameraInfo, info_callback)
     
     det_pub = rospy.Publisher(detection_topic, DetectedObjectArray, queue_size=10)
-    speed_limit_pub = rospy.Publisher('/speed_limit', String, queue_size=10)
-    traffic_light_pub = rospy.Publisher('/traffic_light', String, queue_size=10)
+    speed_limit_pub = rospy.Publisher('/ts_state', String, queue_size=10)
+    traffic_light_pub = rospy.Publisher('/tl_state', String, queue_size=10)
     rospy.spin()
