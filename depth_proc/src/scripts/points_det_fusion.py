@@ -138,7 +138,9 @@ def callback_det(msg):
                 det.x + det.width / 2, 
                 det.y + det.height / 2]
         cls = det.id
-        dets.append(dict(bbox=bbox, cls=cls))
+
+        if cls in CLASS.keys():
+            dets.append(dict(bbox=bbox, cls=cls))
     
     det_msg = dets
 
