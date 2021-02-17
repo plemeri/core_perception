@@ -1,7 +1,10 @@
 <launch>
+  <arg name="image_topic"       default="/color/image_raw" />
+  <arg name="camera_info_topic" default="/color/camera_info" />
+  <arg name="detection_topic"   default="/im_detector/objects" />
     <node name="detection_node" pkg="im_detector" type="detection_node.py">
-        <param name="image_topic" value="/color/image_raw" />
-        <param name="camera_info_topic" value="/color/camera_info" />
-        <param name="detection_topic" value="/im_detector/objects" />
+        <param name="image_topic"       value="$(arg image_topic)" />
+        <param name="camera_info_topic" value="$(arg camera_info_topic)" />
+        <param name="detection_topic"   value="$(arg detection_topic)" />
     </node>
 </launch>
