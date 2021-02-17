@@ -2,6 +2,7 @@ import math
 import os
 import time
 from copy import deepcopy
+import rospy
 
 import torch
 import torch.backends.cudnn as cudnn
@@ -142,7 +143,7 @@ def model_info(model, verbose=False):
     except:
         fs = ''
 
-    print('Model Summary: %g layers, %g parameters, %g gradients%s' % (len(list(model.parameters())), n_p, n_g, fs))
+    rospy.logwarn('Model Summary: %g layers, %g parameters, %g gradients%s' % (len(list(model.parameters())), n_p, n_g, fs))
 
 
 def load_classifier(name='resnet101', n=2):

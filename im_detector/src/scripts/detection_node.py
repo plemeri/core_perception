@@ -1,10 +1,10 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 import time
 
-import cv2
 import easyocr
 import numpy as np
+import os
+import cv2
 
 import torch
 from torchvision.transforms.functional import to_pil_image
@@ -18,14 +18,13 @@ from autoware_msgs.msg import DetectedObjectArray, DetectedObject
 
 from detect import *
 
-import os
-
 
 IMAGE_SIZE = (960, 1280)
 DEBUG = False
-weights = os.path.join(os.environ['AUTOWARE_DIR'], 'src/Data/Checkpoints/best_yolov4-csp-coco-tune.pt')
-cfg = os.path.join(os.path.split(__file__)[0], 'models/yolov4-csp-coco-tune.cfg')
 TS_LIST = ['10', '15', '20', '25', '30', '35', '40', '45', '50']
+weights = os.path.join(os.environ['AUTOWARE_DIR'], 'src/Data/yolo/best_yolov4-csp-coco-tune.pt')
+cfg = os.path.join(os.environ['AUTOWARE_DIR'], 'src/Data/yolo/yolov4-csp-coco-tune.cfg')
+tunes = os.path.join(os.environ['AUTOWARE_DIR'], 'src/Data/yolo/Tune.names')
 
 def init():
     global colors
@@ -49,7 +48,7 @@ def init():
     digit_reader = easyocr.Reader(['en'], gpu=True)
 
     # Get names and colors
-    with open(os.path.join(os.path.split(__file__)[0], 'data/Tune.names'), 'r') as f:
+    with open(tunes, 'r') as f:
         names = f.read().split('\n')
     names = list(filter(None, names))
     names[-1] = "Red"
@@ -95,8 +94,7 @@ def image_callback(msg):
     
     if preds is not None:
         det2darr = DetectedObjectArray()
-        det2darr.header.stamp = rospy.Time.now()
-        det2darr.header.frame_id = msg.header.frame_id
+        det2darr.header = msg.header
 
         max_size = 0.0
         ts_data = "Empty"
@@ -198,7 +196,7 @@ def info_callback(msg):
 
 if __name__ == '__main__':
     init()
-    rospy.init_node('detection_node')
+    rospy.init_node('im_detector')
     image_topic = rospy.get_param('~image_topic', '/color/image_raw')
     camera_info_topic = rospy.get_param('~camera_info_topic', '/color/camera_info')
     detection_topic = rospy.get_param('~detection_topic', '/im_detector/objects')

@@ -161,6 +161,28 @@ catkin_install_python(PROGRAMS
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+catkin_install_python(PROGRAMS
+  scripts/models/common.py
+  scripts/models/experimental.py
+  scripts/models/export.py
+  scripts/models/__init__.py
+  scripts/models/models.py
+  scripts/models/yolo.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/models
+)
+
+catkin_install_python(PROGRAMS
+  scripts/utils/activations.py
+  scripts/utils/datasets.py
+  scripts/utils/general.py
+  scripts/utils/google_utils.py
+  scripts/utils/__init__.py
+  scripts/utils/layers.py
+  scripts/utils/parse_config.py
+  scripts/utils/torch_utils.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/utils
+)
+
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
 # install(TARGETS ${PROJECT_NAME}_node
@@ -182,16 +204,17 @@ catkin_install_python(PROGRAMS
 #   PATTERN ".svn" EXCLUDE
 # )
 
-install(DIRECTORY launch/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-)
-
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
 #   # myfile1
 #   # myfile2
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
+
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
+
 
 #############
 ## Testing ##
