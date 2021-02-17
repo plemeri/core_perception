@@ -74,8 +74,6 @@ def callback(msg):
             det_cls.append(det['cls'])
 
         # merge with points no ground
-
-
         try:
             trans = tf2_buffer.lookup_transform(no_ground.header.frame_id, msg.header.frame_id, rospy.Time(0))
         except:
@@ -100,6 +98,8 @@ def callback(msg):
                 grid = np.array(costmap.data).reshape((h, w))
 
                 for pts, cls in zip(det_list, det_cls):
+                    if len(pts) == 0:
+                        continue
                     pts = xyz_array_to_pointcloud2(pts)
                     pts = do_transform_cloud(pts, trans)
                     pts = pointcloud2_to_xyz_array(pts)
@@ -113,8 +113,10 @@ def callback(msg):
         else:
             ng_points = no_ground
 
-        pub1.publish(ng_points)
-        pub2.publish(costmap)
+        if ng_points is not None:
+            pub1.publish(ng_points)
+        if costmap is not None:
+            pub2.publish(costmap)
 
 
 def callback_camera_info(msg):

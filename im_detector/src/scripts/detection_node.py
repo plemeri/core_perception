@@ -145,22 +145,53 @@ def image_callback(msg):
                 
             # Traffic Light
             if cls_id >= 10:
-                if pred[3] > 450:
+                tf_width = pred[2] - pred[0]
+                tf_height = pred[3] - pred[1]
+
+                # skip false positive - ratio
+                if(tf_width < tf_height) : 
+                    if DEBUG: print('skip ratio : ', pred[0], pred[1], pred[2], pred[3])
                     continue
-                 # eun0
-                tl_detected = True
+                # skip false positive - ROI
+                if(pred[1] > 450) :
+                    if DEBUG: print('skip ROI : ', pred[0], pred[1], pred[2], pred[3])
+                    continue
+
+                
 
                 cpu_img = img[0].float().cpu()
                 pil_img = to_pil_image(cpu_img)
-                pil_img = pil_img.crop((pred[0], pred[1], pred[2], pred[3]))
+
+                #crop image by bbox : 80%
+                # pil_img = pil_img.crop((pred[0], pred[1], pred[2], pred[3]))
+                width_crop_ratio = 0.1
+                height_crop_ratio = 0.2
+                pil_img = pil_img.crop((pred[0] + (width_crop_ratio*tf_width), pred[1] + (height_crop_ratio*tf_height), pred[2] - (width_crop_ratio*tf_width), pred[3] - (height_crop_ratio*tf_height)))
                 pil_img = pil_img.resize((150, 50))
                 tl_img = np.asarray(pil_img)
                 gray = cv2.cvtColor(tl_img, cv2.COLOR_BGR2GRAY)
                 red = tl_img[:, :50:, 2].mean()
                 yellow = gray[:, 50:100].mean()
                 green = tl_img[:, 100:, 1].mean()
+                # print(f"{red:.2f}, {yellow:.2f}, {green:.2f}")
+
+                # skip false positive - color
                 if red < 50.0 and yellow < 50.0 and green < 50.0:
+                    if DEBUG: print('skip color : ', red, yellow, green)
                     continue
+
+                # skip false positive - red color
+                red_center = tl_img[20:30, 20:30, 2].mean()
+                yellow_center = gray[20:30, 70:80].mean()
+                green_center = tl_img[20:30, 20:30, 1].mean()
+
+                red_zone_green_center = tl_img[20:30, 20:30, 1].mean()
+                red_zone_blue_center  = tl_img[20:30, 20:30, 0].mean()
+                # if (red_zone_green_center - red_center) > 0 or (red_zone_blue_center - red_center) > 0 :
+                if red_zone_green_center > 30 or red_zone_blue_center > 30 :
+                    if DEBUG: print('skip red color : ', red_center, red_zone_green_center, red_zone_blue_center)
+                    continue
+
                 cls_id = 10 + np.argmax([red, yellow, green])
 
                 # DEBUG
@@ -173,6 +204,8 @@ def image_callback(msg):
                 traffic_light = String()
                 traffic_light.data = names[cls_id]
                 traffic_light_pub.publish(traffic_light)
+                # eun0
+                tl_detected = True
 
             # Class probabilities.
             det2d.id = cls_id
@@ -215,7 +248,7 @@ def image_callback(msg):
     
     if DEBUG:
         cv2.imshow("test", viz)
-        cv2.imshow("traffic sign", ts_img)
+        cv2.imshow("traffic sign", ts_res)
         cv2.imshow("traffic light", tl_img)
         cv2.waitKey(1)
 
