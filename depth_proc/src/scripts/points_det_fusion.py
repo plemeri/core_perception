@@ -62,6 +62,11 @@ def callback(msg):
 
             dom = np.bincount(dist.astype(int))
             dom = np.where(dom > 50)[0]
+
+            if len(dom) == 0:
+                dom = np.bincount(dist.astype(int))
+                dom = np.where(dom > 25)[0]
+
             dom = dom[0]
 
             points_area = points_area[(dist > dom - CLASS[det['cls']]['thresh']) & (dist < dom + CLASS[det['cls']]['thresh'])]
@@ -69,8 +74,7 @@ def callback(msg):
             det_cls.append(det['cls'])
 
         # merge with points no ground
-        det_points = np.vstack(det_list)
-        ng_points = pointcloud2_to_xyz_array(no_ground)
+
 
         try:
             trans = tf2_buffer.lookup_transform(no_ground.header.frame_id, msg.header.frame_id, rospy.Time(0))
@@ -78,11 +82,13 @@ def callback(msg):
             trans = None
             rospy.logwarn('TF not found')
 
-        if trans is not None:
+        if trans is not None and len(det_list) > 0:
+            det_points = np.vstack(det_list)
             det_points = xyz_array_to_pointcloud2(det_points, rospy.Time.now(), msg.header.frame_id)
             det_points = do_transform_cloud(det_points, trans)
             det_points = pointcloud2_to_xyz_array(det_points)
 
+            ng_points = pointcloud2_to_xyz_array(no_ground)
             ng_points = np.concatenate([ng_points, det_points])
             ng_points = xyz_array_to_pointcloud2(ng_points, rospy.Time.now(), no_ground.header.frame_id)
 
@@ -103,7 +109,10 @@ def callback(msg):
                     grid[min_pts[1]:max_pts[1], min_pts[0]:max_pts[0]] = cls
 
                 costmap.data = grid.reshape(-1).tolist()
-                
+            
+        else:
+            ng_points = no_ground
+
         pub1.publish(ng_points)
         pub2.publish(costmap)
 
